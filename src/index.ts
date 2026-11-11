@@ -34,7 +34,7 @@ import {
   registerSslTools,
   registerPhpTools,
 } from "./tools/misc.js";
-import { listConfiguredAccounts } from "./services/client.js";
+import { listAccountConfigProblems, listConfiguredAccounts } from "./services/client.js";
 
 async function main() {
   const server = new McpServer({
@@ -53,6 +53,10 @@ async function main() {
 
   const transport = new StdioServerTransport();
   await server.connect(transport);
+
+  for (const problem of listAccountConfigProblems()) {
+    process.stderr.write(`cpanel-mcp-server: WARNING: ${problem}\n`);
+  }
 
   const accounts = listConfiguredAccounts();
   process.stderr.write(
