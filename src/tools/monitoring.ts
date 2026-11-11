@@ -23,11 +23,15 @@ export function registerMonitoringTools(server: McpServer) {
     },
     async (params) => {
       try {
-        const data: any = await uapi("LogManager", "list_logs_by_type", { type: "error_log" }, { account: params.account })
-          .catch(async () => {
-            // Fallback to simpler endpoint if LogManager unavailable
-            return uapi("StatsBar", "get_stats", { display: "errlog" }, { account: params.account });
-          });
+        // No fallback: a failure here must reach the caller with cPanel's own
+        // reason. Substituting another call's output made a failed lookup
+        // look like an empty error log.
+        const data: any = await uapi(
+          "LogManager",
+          "list_logs_by_type",
+          { type: "error_log" },
+          { account: params.account }
+        );
         return formatResponse(
           params.response_format,
           `# Error log\n\`\`\`\n${

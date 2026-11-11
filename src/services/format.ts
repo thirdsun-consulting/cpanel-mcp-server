@@ -8,10 +8,24 @@ export interface ToolResult {
   isError?: boolean;
 }
 
+/**
+ * MCP requires `structuredContent` to be a JSON object; clients reject the
+ * whole result otherwise. UAPI's `data` is often a bare string, number or
+ * array, so anything that is not a plain object is wrapped as `{ result }`.
+ */
+export function toStructuredContent(value: unknown): Record<string, unknown> | undefined {
+  if (value === undefined) return undefined;
+  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return { result: value };
+}
+
 export function ok(text: string, structured?: any): ToolResult {
+  const structuredContent = toStructuredContent(structured);
   return {
     content: [{ type: "text", text }],
-    ...(structured !== undefined ? { structuredContent: structured } : {}),
+    ...(structuredContent !== undefined ? { structuredContent } : {}),
   };
 }
 

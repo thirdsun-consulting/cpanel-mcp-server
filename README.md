@@ -55,6 +55,8 @@ export CPANEL_ACCOUNTS='{
 
 Then call e.g. `cpanel_get_error_log` with `{ account: "alpha" }`. Omit `account` to use single-account env vars (so you can mix both modes).
 
+If `CPANEL_ACCOUNTS` is not valid JSON, or an entry lacks `host`, `user` or `token`, the server says so on stderr at startup and in the error of any tool call that names the affected account. These messages name the account and the field, never the token.
+
 Get tokens in cPanel → Security → Manage API Tokens (per cPanel account).
 
 ## Run
@@ -68,6 +70,14 @@ npm start
 ```bash
 npm run inspect
 ```
+
+## Verify
+
+```bash
+npm run build && npm run verify:mock
+```
+
+Drives every tool through a real MCP client against a mock UAPI endpoint (needs the `openssl` CLI for a throwaway certificate). It checks that results are accepted whatever shape cPanel's reply has, that a failed call is reported with cPanel's reason, that `CPANEL_ACCOUNTS` problems are reported, and that secrets never appear in a URL. It does not check that the UAPI functions and parameters the tools use exist; that needs cPanel's OpenAPI spec and has not been done yet.
 
 ## Wire to MCP client
 
